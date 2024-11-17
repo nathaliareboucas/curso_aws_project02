@@ -4,9 +4,9 @@ import br.com.reboucas.nathalia.aws_project02.model.Envelope;
 import br.com.reboucas.nathalia.aws_project02.model.ProductEvent;
 import br.com.reboucas.nathalia.aws_project02.model.ProductEventLog;
 import br.com.reboucas.nathalia.aws_project02.model.SnsMessage;
-import br.com.reboucas.nathalia.aws_project02.repository.ProductEventLogRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.awspring.cloud.dynamodb.DynamoDbTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
@@ -22,7 +22,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class ProductEventConsumer {
     private final ObjectMapper objectMapper;
-    private final ProductEventLogRepository productEventLogRepository;
+    private final DynamoDbTemplate dynamoDbTemplate;
 
     @JmsListener(destination = "${aws.sqs.queue.product.events.name}")
     public void receiverProductEvent(TextMessage textMessage) throws JMSException, JsonProcessingException {
@@ -35,7 +35,13 @@ public class ProductEventConsumer {
                 snsMessage.getMessageId());
 
         ProductEventLog productEventLog = buildProductEventlog(envelope, productEvent);
-        productEventLogRepository.save(productEventLog);
+
+        ProductEventLog productEventLogSaved = dynamoDbTemplate.save(productEventLog);
+        log.info("Product event log saved - PK: {} - SK: {} - ProductId: {} - EventType: {}",
+                productEventLogSaved.getPk(),
+                productEventLogSaved.getSk(),
+                productEventLogSaved.getProductId(),
+                productEventLogSaved.getEventType());
     }
 
     private ProductEventLog buildProductEventlog(Envelope eveEnvelope, ProductEvent productEvent) {
@@ -44,7 +50,7 @@ public class ProductEventConsumer {
         ProductEventLog productEventLog = new ProductEventLog();
         productEventLog.setPk(productEvent.getCode());
         productEventLog.setSk(eveEnvelope.getEventType() + "_" + timestamp);
-        productEventLog.setEventType(eveEnvelope.getEventType());
+        productEventLog.setEventType(eveEnvelope.getEventType().name());
         productEventLog.setProductId(productEvent.getProductId());
         productEventLog.setUsername(productEvent.getUsername());
         productEventLog.setTimestamp(timestamp);

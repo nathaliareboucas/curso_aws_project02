@@ -1,63 +1,50 @@
 package br.com.reboucas.nathalia.aws_project02.model;
 
-import br.com.reboucas.nathalia.aws_project02.enums.EventType;
-import com.amazonaws.services.dynamodbv2.datamodeling.*;
-import org.springframework.data.annotation.Id;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
-@DynamoDBTable(tableName = "product-events")
+@DynamoDbBean
 public class ProductEventLog {
-
-    @Id
-    private ProductEventKey productEventKey;
-
-    @DynamoDBTypeConvertedEnum
-    @DynamoDBAttribute(attributeName = "eventType")
-    private EventType eventType;
-
-    @DynamoDBAttribute(attributeName = "productId")
+    private String pk;
+    private String sk;
+    private String eventType;
     private Long productId;
-
-    @DynamoDBAttribute(attributeName = "username")
     private String username;
-
-    @DynamoDBAttribute(attributeName = "timestamp")
     private Long timestamp;
-
-    @DynamoDBAttribute(attributeName = "ttl")
     private Long ttl;
 
-    @DynamoDBHashKey(attributeName = "pk")
+    @DynamoDbPartitionKey
+    @DynamoDbAttribute("pk")
     public String getPk() {
-        return this.productEventKey != null ? this.productEventKey.getPk() : null;
+        return pk;
     }
 
     public void setPk(String pk) {
-        if (this.productEventKey == null) {
-            this.productEventKey = new ProductEventKey();
-        }
-        this.productEventKey.setPk(pk);
+        this.pk = pk;
     }
 
-    @DynamoDBRangeKey(attributeName = "sk")
+    @DynamoDbSortKey
+    @DynamoDbAttribute("sk")
     public String getSk() {
-        return this.productEventKey != null ? this.productEventKey.getSk() : null;
+        return sk;
     }
 
     public void setSk(String sk) {
-        if (this.productEventKey == null) {
-            this.productEventKey = new ProductEventKey();
-        }
-        this.productEventKey.setPk(sk);
+        this.sk = sk;
     }
 
-    public EventType getEventType() {
+    @DynamoDbAttribute("eventType")
+    public String getEventType() {
         return eventType;
     }
 
-    public void setEventType(EventType eventType) {
+    public void setEventType(String eventType) {
         this.eventType = eventType;
     }
 
+    @DynamoDbAttribute("productId")
     public Long getProductId() {
         return productId;
     }
@@ -66,6 +53,7 @@ public class ProductEventLog {
         this.productId = productId;
     }
 
+    @DynamoDbAttribute("username")
     public String getUsername() {
         return username;
     }
@@ -74,6 +62,7 @@ public class ProductEventLog {
         this.username = username;
     }
 
+    @DynamoDbAttribute("timestamp")
     public Long getTimestamp() {
         return timestamp;
     }
@@ -82,6 +71,7 @@ public class ProductEventLog {
         this.timestamp = timestamp;
     }
 
+    @DynamoDbAttribute("ttl")
     public Long getTtl() {
         return ttl;
     }
